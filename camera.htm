@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Câmera Web</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .camera-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #222;
+            border-radius: 1rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+        }
+
+        #video, #canvas {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            aspect-ratio: 3 / 4;
+            border-radius: 0.75rem;
+            border: 2px solid #555;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease-in-out;
+        }
+
+        #canvas {
+            display: none;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .camera-btn {
+            background-color: #333;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 128px; /* Dobro do tamanho original */
+            height: 128px; /* Dobro do tamanho original */
+            font-size: 2rem; /* Aumenta o tamanho do ícone */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .camera-btn:hover {
+            transform: scale(1.05);
+            background-color: #444;
+        }
+
+        .camera-btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-capture {
+            width: 160px; /* Dobro do tamanho original */
+            height: 160px; /* Dobro do tamanho original */
+            background-color: #fff;
+            color: #000;
+            border: 4px solid #333;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .btn-download {
+            background-color: #3b82f6;
+            color: #fff;
+        }
+        
+        .btn-new {
+            background-color: #ef4444;
+            color: #fff;
+        }
+
+        .btn-switch {
+            background-color: #f59e0b;
+            color: #fff;
+        }
+
+        .btn-exit {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background-color: #ef4444;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            font-size: 1.25rem;
+        }
+
+        #successIcon {
+            display: none;
+            position: absolute;
+            font-size: 8rem;
+            color: #22c55e;
+            animation: fadeInOut 1s ease-in-out;
+        }
+        
+        .hidden {
+            display: none;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: 1; transform: scale(1.2); }
+            100% { opacity: 0; transform: scale(1); }
+        }
+
+        #shutterOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        @keyframes shutterEffect {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="camera-container" id="cameraContainer">
+    <!-- Elementos de vídeo e canvas -->
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas"></canvas>
+
+    <!-- Overlay de efeito de obturador -->
+    <div id="shutterOverlay"></div>
+
+    <!-- Contêiner de botões de controle -->
+    <div class="btn-container" id="controls">
+        <!-- Ocultado por padrão, só aparece após a foto -->
+        <button class="camera-btn btn-new hidden" id="newPhotoButton">
+            <i class="fas fa-redo"></i>
+        </button>
+        <!-- Botão principal de captura - Agora com o mesmo design dos outros -->
+        <button class="camera-btn" id="captureButton">
+            <i class="fas fa-camera"></i>
+        </button>
+        <!-- Ocultado por padrão, só aparece após a foto -->
+        <button class="camera-btn btn-download hidden" id="downloadButton">
+            <i class="fas fa-download"></i>
+        </button>
+    </div>
+
+    <!-- Ícone de sucesso para o download -->
+    <div id="successIcon">
+        <i class="fas fa-check-circle"></i>
+    </div>
+</div>
+
+<script>
+    // Carrega o script do Font Awesome
+    const fontAwesomeScript = document.createElement('script');
+    fontAwesomeScript.src = 'https://kit.fontawesome.com/a076d05399.js';
+    fontAwesomeScript.crossOrigin = 'anonymous';
+    document.head.appendChild(fontAwesomeScript);
+
+    const cameraContainer = document.getElementById('cameraContainer');
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const captureButton = document.getElementById('captureButton');
+    const downloadButton = document.getElementById('downloadButton');
+    const newPhotoButton = document.getElementById('newPhotoButton');
+    const successIcon = document.getElementById('successIcon');
+    const shutterOverlay = document.getElementById('shutterOverlay');
+
+    let stream = null;
+    let isProcessing = false;
+
+    // Função para iniciar a câmera
+    async function startCamera() {
+        if (stream) {
+            stopCamera();
+        }
+        try {
+            const constraints = {
+                video: true
+            };
+            stream = await navigator.mediaDevices.getUserMedia(constraints);
+            video.srcObject = stream;
+            video.play();
+            // Usando style.display para garantir a visibilidade
+            video.style.display = 'block';
+            canvas.style.display = 'none';
+            // Mostra o botão de captura e esconde os outros
+            captureButton.classList.remove('hidden');
+            downloadButton.classList.add('hidden');
+            newPhotoButton.classList.add('hidden');
+        } catch (err) {
+            console.error('Error accessing the camera: ', err);
+            console.log('Não foi possível acessar a câmera. Por favor, verifique as permissões.');
+        }
+    }
+
+    // Função para parar a câmera
+    function stopCamera() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            video.srcObject = null;
+        }
+    }
+
+    // Função para tirar a foto
+    function takePhoto() {
+        if (isProcessing) return;
+        isProcessing = true;
+
+        shutterOverlay.style.animation = 'shutterEffect 0.5s ease-in-out';
+        
+        setTimeout(() => {
+            const context = canvas.getContext('2d');
+            
+            // Define as dimensões do canvas para a proporção 3/4 do container
+            const containerAspectRatio = 3 / 4;
+            let canvasWidth = video.videoWidth;
+            let canvasHeight = video.videoHeight;
+
+            // Calcula a proporção do vídeo
+            const videoAspectRatio = video.videoWidth / video.videoHeight;
+            let sx, sy, sWidth, sHeight;
+
+            // Se o vídeo é mais largo do que a proporção do container
+            if (videoAspectRatio > containerAspectRatio) {
+                sHeight = video.videoHeight;
+                sWidth = sHeight * containerAspectRatio;
+                sx = (video.videoWidth - sWidth) / 2;
+                sy = 0;
+            } else { // Se o vídeo é mais alto
+                sWidth = video.videoWidth;
+                sHeight = sWidth / containerAspectRatio;
+                sx = 0;
+                sy = (video.videoHeight - sHeight) / 2;
+            }
+            
+            // Define as dimensões do canvas para corresponder ao corte final
+            canvas.width = sWidth;
+            canvas.height = sHeight;
+
+            // Desenha o frame do vídeo, aplicando o corte
+            context.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
+
+            // Esconde o vídeo e mostra o canvas com a imagem capturada
+            video.style.display = 'none';
+            canvas.style.display = 'block';
+            
+            // Esconde o botão de captura e mostra os botões de download e nova foto
+            captureButton.classList.add('hidden');
+            downloadButton.classList.remove('hidden');
+            newPhotoButton.classList.remove('hidden');
+            isProcessing = false;
+        }, 500); // Aguarda a animação do obturador
+    }
+    
+    // Função para tirar uma nova foto
+    function newPhoto() {
+        startCamera();
+    }
+
+    // Função para fazer o download da foto
+    function downloadPhoto() {
+        const link = document.createElement('a');
+        link.download = `foto_${Date.now()}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        
+        successIcon.style.display = 'block';
+        setTimeout(() => {
+            successIcon.style.display = 'none';
+        }, 1500);
+    }
+    
+    // Adiciona os event listeners
+    document.addEventListener('DOMContentLoaded', () => {
+        startCamera();
+    });
+    captureButton.addEventListener('click', takePhoto);
+    downloadButton.addEventListener('click', downloadPhoto);
+    newPhotoButton.addEventListener('click', newPhoto);
+</script>
+
+</body>
+</html>
