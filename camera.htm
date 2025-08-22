@@ -1,320 +1,482 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Câmera Web</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Câmera Simples</title>
+    <link rel="icon" href="https://archive.org/download/FingerSnapLogo_201602/FingerSnapLogo.jpg">
+    <link href="https://fonts.googleapis.com/css?family=Schoolbell&v1" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" href="https://dl.dropbox.com/scl/fi/3626h5ykjzh2cng20bz9v/favicon.png?rlkey=z6usyt6q154s3g363y8ha72lq&st=7r31tdt2&dl=0">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #111;
-            color: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            padding: 20px;
+            background: #ddd;
+            padding: 1%;
+        }
+
+        @media (orientation: landscape) {
+            body {
+                padding-right: 5%;
+                padding-left: 5%;
+                background: #ddd;
+            }
         }
 
         .camera-container {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background-color: #222;
-            border-radius: 1rem;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-            width: 100%;
-            max-width: 400px;
-            padding: 20px;
-        }
-
-        #video, #canvas {
-            width: 100%;
-            height: auto;
-            object-fit: cover;
-            aspect-ratio: 3 / 4;
-            border-radius: 0.75rem;
-            border: 2px solid #555;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease-in-out;
-        }
-
-        #canvas {
-            display: none;
-        }
-
-        .btn-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-
-        .camera-btn {
-            background-color: #333;
-            color: #fff;
-            border: none;
-            border-radius: 50%;
-            width: 128px; /* Dobro do tamanho original */
-            height: 128px; /* Dobro do tamanho original */
-            font-size: 2rem; /* Aumenta o tamanho do ícone */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-        }
-
-        .camera-btn:hover {
-            transform: scale(1.05);
-            background-color: #444;
-        }
-
-        .camera-btn:active {
-            transform: scale(0.95);
-        }
-
-        .btn-capture {
-            width: 160px; /* Dobro do tamanho original */
-            height: 160px; /* Dobro do tamanho original */
-            background-color: #fff;
-            color: #000;
-            border: 4px solid #333;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-        }
-
-        .btn-download {
-            background-color: #3b82f6;
-            color: #fff;
-        }
-        
-        .btn-new {
-            background-color: #ef4444;
-            color: #fff;
-        }
-
-        .btn-switch {
-            background-color: #f59e0b;
-            color: #fff;
-        }
-
-        .btn-exit {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background-color: #ef4444;
-            color: #fff;
-            width: 40px;
-            height: 40px;
-            font-size: 1.25rem;
-        }
-
-        #successIcon {
-            display: none;
-            position: absolute;
-            font-size: 8rem;
-            color: #22c55e;
-            animation: fadeInOut 1s ease-in-out;
-        }
-        
-        .hidden {
-            display: none;
-        }
-
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: scale(0.5); }
-            50% { opacity: 1; transform: scale(1.2); }
-            100% { opacity: 0; transform: scale(1); }
-        }
-
-        #shutterOverlay {
-            position: absolute;
+            z-index: 10;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #111;
+            overflow: hidden;
+        }
+
+        #video, #canvas {
+            width: 90%;
+            height: auto;
+            object-fit: cover;
+            aspect-ratio: 3 / 4;
+            border: 2px solid #fff;
+            max-width: 300px;
+            max-height: 400px;
+        }
+
+        #canvas {
+            display: none;
+            z-index: 2;
+        }
+
+        .btn-container {
+            position: fixed;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 2;
+            flex-direction: row;
+            align-items: center;
+        }
+
+        .btn-container-cima {
+            position: fixed;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 2;
+        }
+
+        .btncamera {
+            background: #fff;
+            color: #000;
+            font-size: 24px;
+            cursor: pointer;
+            width: 80px;
+            height: 80px;
+            padding: 20px;
+            border-radius: 50%;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+            z-index: 2;
+            border: 2px solid #000;
+            font-size: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btncamera-capture{
+            background: #fff;
+            color: #000;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            width: 100px;
+            height: 100px;
+            padding: 20px;
+            border-radius: 50%;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+            z-index: 2;
+            border: 2px solid #000;
+            font-size: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btncamera-delete{
+            background: #f55;
+            color: #000;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            width: 100px;
+            height: 100px;
+            padding: 20px;
+            border-radius: 50%;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+            z-index: 2;
+            border: 2px solid #000;
+            font-size: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btncamera-download{
+            background: #55f;
+            color: #000;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            width: 100px;
+            height: 100px;
+            padding: 20px;
+            border-radius: 50%;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+            z-index: 2;
+            border: 2px solid #000;
+            font-size: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        button, .btncamera {
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        #loader {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: #111;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             z-index: 1000;
-            opacity: 0;
-            pointer-events: none;
+        }
+
+        #successIcon {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 150px;
+            color: #fff;
+            padding: 20px;
+            border-radius: 50%;
+            z-index: 1000;
+            text-align: center;
+            text-shadow: 4px 4px 10px rgba(0, 0, 0, 0.5); /* Adiciona sombra ao ícone */
         }
 
         @keyframes shutterEffect {
-            0% { opacity: 0; }
-            50% { opacity: 1; }
-            100% { opacity: 0; }
+            0% {
+                clip-path: circle(100% at center);
+                opacity: 1;
+            }
+            100% {
+                clip-path: circle(0% at center);
+                opacity: 0;
+            }
         }
 
+        #shutterOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            opacity: 0;
+            clip-path: circle(100% at center);
+            z-index: 2000;
+            pointer-events: none;
+        }
+
+        #timerButton {
+            background: #333;
+            color: #fff;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            width: 80px;
+            height: 80px;
+            padding: 20px;
+            border-radius: 50%;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+            z-index: 2;
+            border: 2px solid #000;
+            font-size: 20px;
+        }
+
+        #timerText {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4em;
+            color: white;
+            z-index: 4;
+            display: none;
+            text-shadow: 2px 2px 4px black;
+            pointer-events: none;
+        }
+        
+        /* Estilos para o novo botão 'Voltar' */
+        .voltar-tela-inicial {
+            display: flex;
+            flex-direction: row;
+            position: fixed;
+            top: 0px;
+            left: 0px;
+            right:0;
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            z-index: 999;
+            flex-wrap: wrap; /* Para permitir quebra de linha */
+            background:#222;
+            padding:10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            justify-content: center;
+        }
+        
+        /* Estilo base compartilhado entre os botões */
+        .voltar-tela-inicial button {
+            width: 50px;
+            height: 50px;
+            background: #eee;
+            border: 2px solid #000;
+            font-size: 24px;
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: black;
+        }
     </style>
 </head>
 <body>
-
-<div class="camera-container" id="cameraContainer">
-    <!-- Elementos de vídeo e canvas -->
-    <video id="video" autoplay playsinline></video>
-    <canvas id="canvas"></canvas>
-
-    <!-- Overlay de efeito de obturador -->
-    <div id="shutterOverlay"></div>
-
-    <!-- Contêiner de botões de controle -->
-    <div class="btn-container" id="controls">
-        <!-- Ocultado por padrão, só aparece após a foto -->
-        <button class="camera-btn btn-new hidden" id="newPhotoButton">
-            <i class="fas fa-redo"></i>
-        </button>
-        <!-- Botão principal de captura - Agora com o mesmo design dos outros -->
-        <button class="camera-btn" id="captureButton">
-            <i class="fas fa-camera"></i>
-        </button>
-        <!-- Ocultado por padrão, só aparece após a foto -->
-        <button class="camera-btn btn-download hidden" id="downloadButton">
-            <i class="fas fa-download"></i>
-        </button>
-    </div>
-
-    <!-- Ícone de sucesso para o download -->
-    <div id="successIcon">
-        <i class="fas fa-check-circle"></i>
-    </div>
+<!-- Div do novo botão de voltar -->
+<div class="voltar-tela-inicial">
+    <button onclick="window.location.href='https://armandodecampos.github.io/Ferramentas---Ambev/'">
+      <i class="fas fa-home"></i>
+    </button>
 </div>
 
+<div id="loader">
+    <div class="spinner"></div>
+</div>
+
+<div class="camera-container" id="cameraContainer">
+    <video id="video" autoplay></video>
+    <canvas id="canvas" width="300" height="400"></canvas>
+    <div class="btn-container">
+        <button class="btncamera-delete" id="newPhotoButton" onclick="newPhoto()">
+            <i class="fas fa-trash-alt"></i>
+        </button>
+        <button class="btncamera-download" id="downloadButton" onclick="downloadPhoto();">
+            <i class="fas fa-download"></i>
+        </button>
+        <button class="btncamera-capture" id="captureButton" onclick="takePhoto()">
+            <i class="fas fa-camera"></i>
+        </button>
+    </div>
+</div>
+<div id="successIcon">
+    <i class="fas fa-check-circle"></i>
+</div>
+<div id="shutterOverlay"></div>
 <script>
-    // Carrega o script do Font Awesome
-    const fontAwesomeScript = document.createElement('script');
-    fontAwesomeScript.src = 'https://kit.fontawesome.com/a076d05399.js';
-    fontAwesomeScript.crossOrigin = 'anonymous';
-    document.head.appendChild(fontAwesomeScript);
+    window.addEventListener("load", function () {
+        document.getElementById("loader").style.display = "none";
+    });
 
-    const cameraContainer = document.getElementById('cameraContainer');
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const captureButton = document.getElementById('captureButton');
-    const downloadButton = document.getElementById('downloadButton');
-    const newPhotoButton = document.getElementById('newPhotoButton');
-    const successIcon = document.getElementById('successIcon');
-    const shutterOverlay = document.getElementById('shutterOverlay');
-
+    let video = document.getElementById('video');
+    let canvas = document.getElementById('canvas');
+    let context = canvas.getContext('2d');
     let stream = null;
-    let isProcessing = false;
+    let cameraActive = false;
+    let originalImageData = null;
 
-    // Função para iniciar a câmera
     async function startCamera() {
-        if (stream) {
-            stopCamera();
-        }
         try {
+            // Usa 'environment' para garantir a câmera traseira, que é o modo padrão para a maioria dos dispositivos.
             const constraints = {
-                video: true
+                video: {
+                    facingMode: 'environment', 
+                    width: { ideal: 1920 },
+                    height: { ideal: 1080 },
+                    frameRate: { ideal: 30 },
+                    focusMode: { ideal: 'continuous' },
+                    exposureMode: { ideal: 'auto' },
+                }
             };
             stream = await navigator.mediaDevices.getUserMedia(constraints);
             video.srcObject = stream;
-            video.play();
-            // Usando style.display para garantir a visibilidade
-            video.style.display = 'block';
-            canvas.style.display = 'none';
-            // Mostra o botão de captura e esconde os outros
-            captureButton.classList.remove('hidden');
-            downloadButton.classList.add('hidden');
-            newPhotoButton.classList.add('hidden');
-        } catch (err) {
-            console.error('Error accessing the camera: ', err);
-            console.log('Não foi possível acessar a câmera. Por favor, verifique as permissões.');
+
+            video.onloadedmetadata = () => {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                cameraActive = true;
+            };
+        } catch (error) {
+            console.error('Erro ao acessar a câmera:', error);
+            cameraActive = false;
+
+            try {
+                const backupConstraints = {
+                    video: {
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        frameRate: { ideal: 24 },
+                    }
+                };
+                stream = await navigator.mediaDevices.getUserMedia(backupConstraints);
+                video.srcObject = stream;
+
+                video.onloadedmetadata = () => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    cameraActive = true;
+                };
+            } catch (backupError) {
+                console.error('Erro ao acessar a câmera padrão:', backupError);
+                cameraActive = false;
+            }
         }
     }
 
-    // Função para parar a câmera
     function stopCamera() {
         if (stream) {
             stream.getTracks().forEach(track => track.stop());
             video.srcObject = null;
+            cameraActive = false;
         }
     }
 
-    // Função para tirar a foto
-    function takePhoto() {
-        if (isProcessing) return;
-        isProcessing = true;
+    async function takePhoto() {
+        let shutter = document.getElementById("shutterOverlay");
+        shutter.style.animation = "shutterEffect 0.3s ease-in-out";
 
-        shutterOverlay.style.animation = 'shutterEffect 0.5s ease-in-out';
-        
-        setTimeout(() => {
-            const context = canvas.getContext('2d');
-            
-            // Define as dimensões do canvas para a proporção 3/4 do container
-            const containerAspectRatio = 3 / 4;
-            let canvasWidth = video.videoWidth;
-            let canvasHeight = video.videoHeight;
+        try {
+            if ('ImageCapture' in window && stream) {
+                const track = stream.getVideoTracks()[0];
+                const imageCapture = new ImageCapture(track);
+                const blob = await imageCapture.takePhoto();
+                const imageUrl = URL.createObjectURL(blob);
 
-            // Calcula a proporção do vídeo
-            const videoAspectRatio = video.videoWidth / video.videoHeight;
-            let sx, sy, sWidth, sHeight;
-
-            // Se o vídeo é mais largo do que a proporção do container
-            if (videoAspectRatio > containerAspectRatio) {
-                sHeight = video.videoHeight;
-                sWidth = sHeight * containerAspectRatio;
-                sx = (video.videoWidth - sWidth) / 2;
-                sy = 0;
-            } else { // Se o vídeo é mais alto
-                sWidth = video.videoWidth;
-                sHeight = sWidth / containerAspectRatio;
-                sx = 0;
-                sy = (video.videoHeight - sHeight) / 2;
+                const img = new Image();
+                img.onload = () => {
+                    cropAndDraw(img);
+                };
+                img.src = imageUrl;
+            } else {
+                cropAndDraw(video);
             }
-            
-            // Define as dimensões do canvas para corresponder ao corte final
-            canvas.width = sWidth;
-            canvas.height = sHeight;
-
-            // Desenha o frame do vídeo, aplicando o corte
-            context.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
-
-            // Esconde o vídeo e mostra o canvas com a imagem capturada
-            video.style.display = 'none';
-            canvas.style.display = 'block';
-            
-            // Esconde o botão de captura e mostra os botões de download e nova foto
-            captureButton.classList.add('hidden');
-            downloadButton.classList.remove('hidden');
-            newPhotoButton.classList.remove('hidden');
-            isProcessing = false;
-        }, 500); // Aguarda a animação do obturador
-    }
-    
-    // Função para tirar uma nova foto
-    function newPhoto() {
-        startCamera();
+        } catch (error) {
+            console.error('Erro ao tirar foto:', error);
+            cropAndDraw(video);
+        }
     }
 
-    // Função para fazer o download da foto
+    function cropAndDraw(source) {
+        let width = source.videoWidth || source.width;
+        let height = source.videoHeight || source.height;
+        let targetAspectRatio = 120 / 141;
+        let newWidth, newHeight, xOffset, yOffset;
+
+        if (width / height > targetAspectRatio) {
+            newHeight = height;
+            newWidth = height * targetAspectRatio;
+            xOffset = (width - newWidth) / 2;
+            yOffset = 0;
+        } else {
+            newWidth = width;
+            newHeight = width / targetAspectRatio;
+            xOffset = 0;
+            yOffset = (height - newHeight) / 2;
+        }
+
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+        context.drawImage(source, xOffset, yOffset, newWidth, newHeight, 0, 0, newWidth, newHeight);
+        processCanvas();
+    }
+
+    function processCanvas() {
+        canvas.style.display = "block";
+        video.style.display = "none";
+        document.getElementById("captureButton").style.display = "none";
+        document.getElementById("downloadButton").style.display = "inline-block";
+        document.getElementById("newPhotoButton").style.display = "inline-block";
+        document.getElementById("shutterOverlay").style.animation = 'none';
+        document.getElementById("shutterOverlay").style.opacity = "0";
+        originalImageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    }
+
+    function generateRandomFilename() {
+        let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let filename = 'foto_';
+        for (let i = 0; i < 16; i++) {
+            filename += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return filename + '.png';
+    }
+
     function downloadPhoto() {
-        const link = document.createElement('a');
-        link.download = `foto_${Date.now()}.png`;
-        link.href = canvas.toDataURL('image/png');
+        let link = document.createElement("a");
+        link.href = canvas.toDataURL("image/png");
+        link.download = generateRandomFilename();
         link.click();
-        
-        successIcon.style.display = 'block';
-        setTimeout(() => {
-            successIcon.style.display = 'none';
-        }, 1500);
-    }
-    
-    // Adiciona os event listeners
-    document.addEventListener('DOMContentLoaded', () => {
-        startCamera();
-    });
-    captureButton.addEventListener('click', takePhoto);
-    downloadButton.addEventListener('click', downloadPhoto);
-    newPhotoButton.addEventListener('click', newPhoto);
-</script>
 
+        document.getElementById("successIcon").style.display = "block";
+
+        setTimeout(() => {
+            document.getElementById("successIcon").style.display = "none";
+            newPhoto();
+        }, 1000);
+    }
+
+    function newPhoto() {
+        canvas.style.display = 'none';
+        video.style.display = 'block';
+        document.getElementById('downloadButton').style.display = 'none';
+        document.getElementById('newPhotoButton').style.display = 'none';
+        document.getElementById('captureButton').style.display = 'inline-block';
+    }
+
+    window.onload = function () {
+        document.getElementById('downloadButton').style.display = 'none';
+        document.getElementById('newPhotoButton').style.display = 'none';
+        startCamera();
+    };
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(registration => {
+                    console.log('Service Worker registrado com sucesso:', registration);
+                })
+                .catch(error => {
+                    console.log('Erro ao registrar o Service Worker:', error);
+                });
+        });
+    }
+</script>
 </body>
 </html>
